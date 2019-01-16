@@ -5,3 +5,7 @@ The output of IQ module 0 is added (after rescaling) to the phase step size of A
 The modulation depth can be set by changing the output amplitude of IQ module 0 - currently it should be set to about 1-2 MHz at full amplitude.
 
 The Verilog source code for the modified modules as well as the bitstream file are provided - all other files are identical to the ones provided on the PyRPL github repository (version 0.9.4.0)
+
+
+To just use this modification replace red_pitaya.bin in your pyrpl folder with the file provided here - after this ASG 0 and IQ module 0 will automatically be wired together when you connect to a RedPitaya.
+If you do not know the location of your pyrpl installation run `pip show pyrpl`
