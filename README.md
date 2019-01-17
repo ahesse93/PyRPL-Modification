@@ -1,7 +1,5 @@
 # pyrpl-freqmod
 
-*Currently not (yet) functional*
-
 Modifies the RedPitaya FPGA of PyRPL, so that the built in lock in amplifier can output a sinusoidal frequency modulation
 
 The output of IQ module 0 is added (after rescaling) to the phase step size of ASG module 0. If ASG 0 outputs a sine wave this will sinusoidally modulate its frequency with the frequency of the IQ module (useful eg for frequency modulating a microwave)
