@@ -107,7 +107,7 @@ wire  [RSZ+15:0] phase_mod;
 
 localparam  moddepth = 5;
 
-assign phase_mod = { {moddepth{phase_in[13]}}, phase_in[13:0], {RSZ+15-14-moddepth{1'b0}} };   //pads phase to be correctly signed
+assign phase_mod = { {moddepth{phase_in[13]}}, phase_in[13:0], {RSZ+16-14-moddepth{1'b0}} };   //pads phase to be correctly signed
                                                                                               //and of length RSZ+15, just as set_a_step
 
 ////////////////////////////////////////////////////////
