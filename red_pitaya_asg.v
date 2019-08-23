@@ -77,11 +77,20 @@ module red_pitaya_asg (
   input                 trig_b_i  ,  // starting trigger CHB
   output     [  2-1: 0] trig_out_o,  // notification trigger
 
-  input      [14-1: 0]  phase_in,   // input from the IQ module to modulate the phase step size
-
   input                 trig_scope_i    ,  // trigger from the scope
 
   output     [ 14-1: 0] asg1phase_o,
+
+
+  /////////////////////////////////
+  /////////////////////////////////
+
+  input      [ 14-1: 0] phase_a_in,
+  input      [ 14-1: 0] phase_b_in,
+  input      [ 14-1: 0] phase_both_in,
+
+  /////////////////////////////////
+  /////////////////////////////////
 
   // System bus
   input      [ 32-1: 0] sys_addr  ,  // bus address
@@ -101,21 +110,39 @@ module red_pitaya_asg (
 localparam RSZ = 14 ;  // RAM size 2^RSZ
 
 
-////////////////////////////////////////////////////////
+/////////////////////////////////
+/////////////////////////////////
 
-wire  [RSZ+15:0] phase_mod;
+wire  [RSZ+15:0] phase_a_mod;
+wire  [RSZ+15:0] phase_b_mod;
+wire  [RSZ+15:0] phase_both_mod;
 
-localparam  moddepth = 5;
+localparam  moddepth = 4;
+localparam  moddepth_both = 4;
 
-assign phase_mod = { {moddepth{phase_in[13]}}, phase_in[13:0], {RSZ+16-14-moddepth{1'b0}} };   //pads phase to be correctly signed
-                                                                                              //and of length RSZ+15, just as set_a_step
+assign phase_a_mod   = {{moddepth{phase_a_in[13]}}, phase_a_in[13:0], {RSZ+16-14-moddepth{1'b0}}};
+assign phase_b_mod   = {{moddepth{phase_b_in[13]}}, phase_b_in[13:0], {RSZ+16-14-moddepth{1'b0}}};
+assign phase_both_mod   = {{moddepth_both{phase_both_in[13]}}, phase_both_in[13:0], {RSZ+16-14-moddepth_both{1'b0}}};
 
-////////////////////////////////////////////////////////
+/////////////////////////////////
+/////////////////////////////////
 
 
 
 reg   [RSZ+15: 0] set_a_size   , set_b_size   ;
-reg   [RSZ+15: 0] set_a_step   , set_b_step   , set_a_step_mod;
+reg   [RSZ+15: 0] set_a_step   , set_b_step   ;
+
+
+/////////////////////////////////
+/////////////////////////////////
+
+reg   [RSZ+15: 0] set_a_step_mod;
+reg   [RSZ+15: 0] set_b_step_mod;
+
+/////////////////////////////////
+/////////////////////////////////
+
+
 reg   [RSZ+15: 0] set_a_ofs    , set_b_ofs    ;
 reg               set_a_rst    , set_b_rst    ;
 reg               set_a_once   , set_b_once   ;
@@ -190,7 +217,17 @@ red_pitaya_asg_ch  #(.RSZ (RSZ)) ch [1:0] (
   .buf_rpnt_o      ({buf_b_rpnt       , buf_a_rpnt       }),  // buffer current read pointer
   // configuration
   .set_size_i      ({set_b_size       , set_a_size       }),  // set table data size
-  .set_step_i      ({set_b_step       , set_a_step_mod   }),  // set pointer step
+
+
+  ////////////////////////////////
+  ////////////////////////////////
+
+  .set_step_i      ({set_b_step_mod   , set_a_step_mod   }),  // set pointer step
+
+  ////////////////////////////////
+  ////////////////////////////////
+
+
   .set_ofs_i       ({set_b_ofs        , set_a_ofs        }),  // set reset offset
   .set_rst_i       ({set_b_rst        , set_a_rst        }),  // set FMS to reset
   .set_once_i      ({set_b_once       , set_a_once       }),  // set only once
@@ -223,6 +260,7 @@ always @(posedge dac_clk_i) begin
 end
 
 
+
 always @(posedge dac_clk_i)
 begin
    buf_a_we   <= sys_wen && (sys_addr[19:RSZ+2] == 'h1);
@@ -252,14 +290,7 @@ if (dac_rstn_i == 1'b0) begin
    set_a_wrap  <=  1'b0    ;
    set_a_size  <= {RSZ+16{1'b1}} ;
    set_a_ofs   <= {RSZ+16{1'b0}} ;
-   set_a_step <={{RSZ+15{1'b0}},1'b0} ;
-
-
-   ////////////////////////////////////////////
-   set_a_step_mod  <={{RSZ+15{1'b0}},1'b0} ;
-   ////////////////////////////////////////////
-
-
+   set_a_step  <={{RSZ+15{1'b0}},1'b0} ;
    set_a_ncyc  <= 32'h0    ;
    set_a_rnum  <= 16'h0    ;
    set_a_rdly  <= 32'h0    ;
@@ -294,13 +325,28 @@ if (dac_rstn_i == 1'b0) begin
    rand_a_on <= 1'b0;
    rand_b_on <= 1'b0;
 
+
+   /////////////////////////////////
+   /////////////////////////////////
+
+   set_a_step_mod <= {{RSZ+15{1'b0}}, 1'b0};
+   set_b_step_mod <= {{RSZ+15{1'b0}}, 1'b0};
+
+   /////////////////////////////////
+   /////////////////////////////////
+
+
 end else begin
 
-////////////////////////////////////////////////////////
 
-   set_a_step_mod <= $signed(set_a_step) + $signed(phase_mod);
+  /////////////////////////////////
+  /////////////////////////////////
 
-////////////////////////////////////////////////////////
+  set_a_step_mod <= $signed(set_a_step) + $signed(phase_a_mod) + $signed(phase_both_mod);
+  set_b_step_mod <= $signed(set_b_step) + $signed(phase_b_mod) + $signed(phase_both_mod);
+
+  /////////////////////////////////
+  /////////////////////////////////
 
 
    trig_a_sw  <= sys_wen && (sys_addr[19:0]==20'h0) && sys_wdata[0]  ;
