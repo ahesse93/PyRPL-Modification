@@ -3,7 +3,7 @@
 Modifies the RedPitaya FPGA of PyRPL, so that the built in lock in amplifier can output a sinusoidal frequency modulation
 
 The output of IQ module 0 is added (after rescaling) to the phase step size of ASG module 0. If ASG 0 outputs a sine wave this will sinusoidally modulate its frequency with the frequency of the IQ module (useful eg for frequency modulating a microwave)
-The modulation depth can be set by changing the output amplitude of IQ module 0 - currently it should be set to about 1-2 MHz at full amplitude.
+The modulation depth can be set by changing the output amplitude of IQ module 0 - currently it should be set to about 8 MHz at full amplitude.
 
 The output of IQ module 1 modulates ASG 1 this way, and IQ 2 modulates ASG 0 and ASG 1 at the same time.
 
