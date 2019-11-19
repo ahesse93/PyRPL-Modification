@@ -117,7 +117,7 @@ wire  [RSZ+15:0] phase_a_mod;
 wire  [RSZ+15:0] phase_b_mod;
 wire  [RSZ+15:0] phase_both_mod;
 
-localparam  moddepth = 4;
+localparam  moddepth = 6;
 localparam  moddepth_both = 4;
 
 assign phase_a_mod   = {{moddepth{phase_a_in[13]}}, phase_a_in[13:0], {RSZ+16-14-moddepth{1'b0}}};
@@ -222,6 +222,7 @@ red_pitaya_asg_ch  #(.RSZ (RSZ)) ch [1:0] (
   ////////////////////////////////
   ////////////////////////////////
 
+  .amp_mod         ({phase_both_mod   , phase_both_mod   }),
   .set_step_i      ({set_b_step_mod   , set_a_step_mod   }),  // set pointer step
 
   ////////////////////////////////
@@ -342,8 +343,8 @@ end else begin
   /////////////////////////////////
   /////////////////////////////////
 
-  set_a_step_mod <= $signed(set_a_step) + $signed(phase_a_mod) + $signed(phase_both_mod);
-  set_b_step_mod <= $signed(set_b_step) + $signed(phase_b_mod) + $signed(phase_both_mod);
+  set_a_step_mod <= $signed(set_a_step) + $signed(phase_a_mod);
+  set_b_step_mod <= $signed(set_b_step) + $signed(phase_b_mod);
 
   /////////////////////////////////
   /////////////////////////////////
